@@ -1,6 +1,7 @@
 package servers;
 
 import blockchain.data.BCS;
+import com.assafmanor.bbc.bbc.BBCContract;
 import communication.CommLayer;
 import communication.overlays.clique.Clique;
 import proto.types.client;
