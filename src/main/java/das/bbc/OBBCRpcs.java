@@ -246,7 +246,8 @@ public class OBBCRpcs extends ObbcImplBase {
 //                                .setHeight(height)
 //                                .setSender(id)
 //                                .setVote(dec).build());
-                            bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+                        // TODO add height to call...
+                        bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
                                 @Override
                                 public void onProposeDone(int i) {
                                     // TODO? should we have a callback?

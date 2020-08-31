@@ -106,37 +106,37 @@ public class OBBC extends ObbcImplBase {
     }
 
     static void reCons(Meta key, int id, int height) {
-//        int worker = key.getChannel();
-//        bbcFastDec[worker].computeIfPresent(key, (k1, v1) -> {
-//            if (v1.getDec()) {
-//                bbcVotes[worker].computeIfAbsent(key, k2 -> {
-//                    logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
-//                            id, worker, key.getCidSeries(), key.getCid()));
-//                    bbc.nonBlockingPropose(BbcMsg.newBuilder()
-//                            .setM(key)
-//                            .setHeight(height)
-//                            .setSender(id)
-//                            .setVote(v1.getDec()).build());
-//                    return new VoteData();
-//                });
-//            }
-//            return v1;
-//        });
-//        bbcFastDec[worker].computeIfAbsent(key, k -> {
-//            if (BCS.contains(worker, height)) {
-//                logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized and a block is exist, " +
-//                                "thus propose [cidSeries=%d ; cid=%d; height=%d]",
-//                        id, worker, key.getCidSeries(), key.getCid(), height));
-//                bbc.nonBlockingPropose(BbcMsg.newBuilder()
-//                        .setM(key)
-//                        .setHeight(height)
-//                        .setSender(id)
-//                        .setVote(true).build());
-//                return new BbcDecData(true, true);
-//            }
-//            return null;
-//
-//        });
+        int worker = key.getChannel();
+        bbcFastDec[worker].computeIfPresent(key, (k1, v1) -> {
+            if (v1.getDec()) {
+                bbcVotes[worker].computeIfAbsent(key, k2 -> {
+                    logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
+                            id, worker, key.getCidSeries(), key.getCid()));
+                    bbc.nonBlockingPropose(BbcMsg.newBuilder()
+                            .setM(key)
+                            .setHeight(height)
+                            .setSender(id)
+                            .setVote(v1.getDec()).build());
+                    return new VoteData();
+                });
+            }
+            return v1;
+        });
+        bbcFastDec[worker].computeIfAbsent(key, k -> {
+            if (BCS.contains(worker, height)) {
+                logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized and a block is exist, " +
+                                "thus propose [cidSeries=%d ; cid=%d; height=%d]",
+                        id, worker, key.getCidSeries(), key.getCid(), height));
+                bbc.nonBlockingPropose(BbcMsg.newBuilder()
+                        .setM(key)
+                        .setHeight(height)
+                        .setSender(id)
+                        .setVote(true).build());
+                return new BbcDecData(true, true);
+            }
+            return null;
+
+        });
 
     }
 
