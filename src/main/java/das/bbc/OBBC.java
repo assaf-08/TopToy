@@ -1,6 +1,7 @@
 package das.bbc;
 
 import blockchain.data.BCS;
+import com.assafmanor.bbc.bbc.*;
 import com.google.protobuf.ByteString;
 import communication.CommLayer;
 import proto.prpcs.obbcService.ObbcGrpc.*;
@@ -16,8 +17,6 @@ import das.data.Data;
 import das.data.VoteData;
 import utils.config.yaml.ServerPublicDetails;
 import utils.statistics.Statistics;
-import com.assafmanor.bbc.bbc.BBCBuilder;
-import com.assafmanor.bbc.bbc.BBC;
 
 import static das.data.Data.*;
 import static java.lang.String.format;
@@ -34,8 +33,13 @@ public class OBBC extends ObbcImplBase {
     public OBBC(int id, int n, int f, int workers, int qSize, ServerPublicDetails[] cluster, CommLayer comm, String caRoot, String serverCrt,
                 String serverPrivKey) {
         OBBC.id = id;
-        bbc = new BBCBuilder(id, 8181).build();
-        rpcs = new OBBCRpcs(id, n, f, workers, qSize, cluster, caRoot, serverCrt, serverPrivKey,bbc);
+        bbc = new BBCBuilder(id, 8181).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
+            @Override
+            public void onReceiveFirstProtocolMsg(BBCMetaData bbcMetaData, int height) {
+                reCons(MetaDataAdapter.bbcMetaToMeta(bbcMetaData), id, height);
+            }
+        }).build();
+        rpcs = new OBBCRpcs(id, n, f, workers, qSize, cluster, caRoot, serverCrt, serverPrivKey, bbc);
         OBBC.comm = comm;
 
         logger.info(format("Initiated OBBC: [id=%d]", id));
@@ -112,11 +116,19 @@ public class OBBC extends ObbcImplBase {
                 bbcVotes[worker].computeIfAbsent(key, k2 -> {
                     logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
                             id, worker, key.getCidSeries(), key.getCid()));
-                    bbc.nonBlockingPropose(BbcMsg.newBuilder()
-                            .setM(key)
-                            .setHeight(height)
-                            .setSender(id)
-                            .setVote(v1.getDec()).build());
+//                    bbc.nonBlockingPropose(BbcMsg.newBuilder()
+//                            .setM(key)
+//                            .setHeight(height)
+//                            .setSender(id)
+//                            .setVote(v1.getDec()).build());
+
+                    // TODO add height to call.
+                    bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+                        @Override
+                        public void onProposeDone(int i) {
+                            // TODO what callback do we need?
+                        }
+                    });
                     return new VoteData();
                 });
             }
@@ -127,11 +139,18 @@ public class OBBC extends ObbcImplBase {
                 logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized and a block is exist, " +
                                 "thus propose [cidSeries=%d ; cid=%d; height=%d]",
                         id, worker, key.getCidSeries(), key.getCid(), height));
-                bbc.nonBlockingPropose(BbcMsg.newBuilder()
-                        .setM(key)
-                        .setHeight(height)
-                        .setSender(id)
-                        .setVote(true).build());
+//                bbc.nonBlockingPropose(BbcMsg.newBuilder()
+//                        .setM(key)
+//                        .setHeight(height)
+//                        .setSender(id)
+//                        .setVote(true).build());
+                // TODO add height to call.
+                bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+                    @Override
+                    public void onProposeDone(int i) {
+                        // TODO what callback do we need?
+                    }
+                });
                 return new BbcDecData(true, true);
             }
             return null;

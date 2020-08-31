@@ -153,7 +153,6 @@ public class Config {
     public static void reconfigure() {
             Top.reconfigure();
             ABService.reconfigure();
-//            BBC.reconfigure(); // TODO ?
             OBBC.reconfigure();
             WRB.reconfigure();
             Membership.reconfigure();
