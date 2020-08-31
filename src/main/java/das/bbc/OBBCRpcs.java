@@ -1,6 +1,8 @@
 package das.bbc;
 
 import blockchain.data.BCS;
+import com.assafmanor.bbc.bbc.BBC;
+import com.assafmanor.bbc.bbc.NonBlockingProposeCallback;
 import proto.prpcs.obbcService.ObbcGrpc.*;
 import crypto.BlockDigSig;
 import crypto.SslUtils;
@@ -136,9 +138,10 @@ public class OBBCRpcs extends ObbcImplBase {
     private String serverCrt;
     private String serverPrivKey;
     private int workers;
+    private final BBC bbc;
 
     OBBCRpcs(int id, int n, int f, int workers, int qSize, ServerPublicDetails[] cluster, String caRoot, String serverCrt,
-             String serverPrivKey) {
+             String serverPrivKey,BBC bbc) {
         this.id = id;
         this.nodes = cluster;
         this.n = n;
@@ -148,6 +151,7 @@ public class OBBCRpcs extends ObbcImplBase {
         this.serverCrt = serverCrt;
         this.serverPrivKey = serverPrivKey;
         this.workers = workers;
+        this.bbc=bbc;
         logger.info(format("Initiated OBBCRpcs: [id=%d; n=%d; f=%d; qSize=%d]", id, n, f, qSize));
     }
 
@@ -237,11 +241,17 @@ public class OBBCRpcs extends ObbcImplBase {
                     bbcVotes[worker].computeIfPresent(key, (k2, v2) -> {
                         logger.debug(format("[#%d-C[%d]] (addNewFastDec) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
                                 id, worker, key.getCidSeries(),  key.getCid()));
-                        BBC.nonBlockingPropose(BbcMsg.newBuilder()
-                                .setM(key)
-                                .setHeight(height)
-                                .setSender(id)
-                                .setVote(dec).build());
+//                        BBC.nonBlockingPropose(BbcMsg.newBuilder()
+//                                .setM(key)
+//                                .setHeight(height)
+//                                .setSender(id)
+//                                .setVote(dec).build());
+                            bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+                                @Override
+                                public void onProposeDone(int i) {
+                                    // TODO? should we have a callback?
+                                }
+                            });
                         return v2;
                     });
                 }

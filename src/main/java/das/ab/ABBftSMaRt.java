@@ -19,7 +19,6 @@ import proto.types.version.*;
 
 import java.util.ArrayList;
 
-import static das.bbc.BBC.addToBBCData;
 import static das.ms.Membership.handleStartMsg;
 import static java.lang.String.format;
 
@@ -78,8 +77,8 @@ public class ABBftSMaRt extends DefaultSingleRecoverable {
                     break;
                 case SYNC: addToSyncData(msg, msg.getM().getChannel(), n, f);
                     break;
-                case BBC: addToBBCData(msg, msg.getM().getChannel());
-                    break;
+                case BBC: throw new Exception("BBC Msg");
+
                 case START: handleStartMsg(msg);
                     break;
                 case NOT_MAPPED:

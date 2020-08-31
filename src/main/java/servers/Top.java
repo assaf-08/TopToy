@@ -1,12 +1,10 @@
 package servers;
 
 import blockchain.data.BCS;
-import com.assafmanor.bbc.bbc.BBCContract;
 import communication.CommLayer;
 import communication.overlays.clique.Clique;
 import proto.types.client;
 import das.ab.ABService;
-import das.bbc.BBC;
 import das.bbc.OBBC;
 import das.ms.Membership;
 import das.wrb.WRB;
@@ -78,8 +76,6 @@ public class Top {
         logger.info(format("[%d] has initiated communication layer", id));
         new ABService(id, n, f, abConfigHome);
         logger.info(format("[%d] has initiated ab service", id));
-        new BBC(id, n, f, n - f);
-        logger.info(format("[%d] has initiated BBC", id));
         new OBBC(id, n, f, workers, n - f, cluster, comm, caRoot, serverCrt, serverPrivKey);
         logger.info(format("[%d] has initiated OBBC service", id));
         new WRB(id, workers, n, f, tmo, cluster, serverCrt, serverPrivKey, caRoot);

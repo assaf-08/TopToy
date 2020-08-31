@@ -16,6 +16,8 @@ import das.data.Data;
 import das.data.VoteData;
 import utils.config.yaml.ServerPublicDetails;
 import utils.statistics.Statistics;
+import com.assafmanor.bbc.bbc.BBCBuilder;
+import com.assafmanor.bbc.bbc.BBC;
 
 import static das.data.Data.*;
 import static java.lang.String.format;
@@ -26,12 +28,16 @@ public class OBBC extends ObbcImplBase {
     static private int id;
     private static OBBCRpcs rpcs;
     private static CommLayer comm;
+    private static BBC bbc;
+
 
     public OBBC(int id, int n, int f, int workers, int qSize, ServerPublicDetails[] cluster, CommLayer comm, String caRoot, String serverCrt,
                 String serverPrivKey) {
         OBBC.id = id;
-        rpcs = new OBBCRpcs(id, n, f, workers, qSize, cluster, caRoot, serverCrt, serverPrivKey);
+        bbc = new BBCBuilder(id, 8181).build();
+        rpcs = new OBBCRpcs(id, n, f, workers, qSize, cluster, caRoot, serverCrt, serverPrivKey,bbc);
         OBBC.comm = comm;
+
         logger.info(format("Initiated OBBC: [id=%d]", id));
 
     }
@@ -39,6 +45,7 @@ public class OBBC extends ObbcImplBase {
     static public void reconfigure() {
 
     }
+
     static public void start() {
         rpcs.start();
     }
@@ -48,8 +55,7 @@ public class OBBC extends ObbcImplBase {
     }
 
 
-    static public BbcDecData propose(BbcMsg v, int worker, int height, int expSender) throws InterruptedException
-    {
+    static public BbcDecData propose(BbcMsg v, int worker, int height, int expSender) throws InterruptedException {
         Meta key = v.getM();
         rpcs.broadcastFVMessage(v);
         synchronized (bbcFastDec[worker]) {
@@ -91,51 +97,46 @@ public class OBBC extends ObbcImplBase {
 
         }
 
-        BbcDecData dec = BBC.propose(BbcMsg.newBuilder()
-                .setM(key)
-                .setVote(vote)
-                .setHeight(height)
-                .setSender(id)
-                .build(), key);
-        if (!dec.getDec()) {
+        int dec = bbc.propose(vote ? 1 : 0, MetaDataAdapter.metaToBBCMeta(key)); // TODO set height
+        if (dec == 0) {
             Statistics.updateNegTime(System.currentTimeMillis() - start);
         }
 
-        return dec;
+        return new BbcDecData(dec == 1, false);
     }
-    
-    static void reCons(Meta key, int id, int height) {
-        int worker = key.getChannel();
-        bbcFastDec[worker].computeIfPresent(key, (k1, v1) -> {
-            if (v1.getDec()) {
-                bbcVotes[worker].computeIfAbsent(key, k2 -> {
-                    logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
-                             id, worker, key.getCidSeries(),  key.getCid()));
-                    BBC.nonBlockingPropose(BbcMsg.newBuilder()
-                            .setM(key)
-                            .setHeight(height)
-                            .setSender(id)
-                            .setVote(v1.getDec()).build());
-                    return new VoteData();
-                });
-            }
-            return v1;
-        });
-        bbcFastDec[worker].computeIfAbsent(key, k -> {
-            if (BCS.contains(worker, height)) {
-                logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized and a block is exist, " +
-                                "thus propose [cidSeries=%d ; cid=%d; height=%d]",
-                        id, worker, key.getCidSeries(),  key.getCid(), height));
-                BBC.nonBlockingPropose(BbcMsg.newBuilder()
-                        .setM(key)
-                        .setHeight(height)
-                        .setSender(id)
-                        .setVote(true).build());
-                return new BbcDecData(true, true);
-            }
-            return null;
 
-        });
+    static void reCons(Meta key, int id, int height) {
+//        int worker = key.getChannel();
+//        bbcFastDec[worker].computeIfPresent(key, (k1, v1) -> {
+//            if (v1.getDec()) {
+//                bbcVotes[worker].computeIfAbsent(key, k2 -> {
+//                    logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
+//                            id, worker, key.getCidSeries(), key.getCid()));
+//                    bbc.nonBlockingPropose(BbcMsg.newBuilder()
+//                            .setM(key)
+//                            .setHeight(height)
+//                            .setSender(id)
+//                            .setVote(v1.getDec()).build());
+//                    return new VoteData();
+//                });
+//            }
+//            return v1;
+//        });
+//        bbcFastDec[worker].computeIfAbsent(key, k -> {
+//            if (BCS.contains(worker, height)) {
+//                logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized and a block is exist, " +
+//                                "thus propose [cidSeries=%d ; cid=%d; height=%d]",
+//                        id, worker, key.getCidSeries(), key.getCid(), height));
+//                bbc.nonBlockingPropose(BbcMsg.newBuilder()
+//                        .setM(key)
+//                        .setHeight(height)
+//                        .setSender(id)
+//                        .setVote(true).build());
+//                return new BbcDecData(true, true);
+//            }
+//            return null;
+//
+//        });
 
     }
 
