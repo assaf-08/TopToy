@@ -3,7 +3,6 @@ package utils.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import das.ab.ABService;
-import das.bbc.OBBC;
 import das.ms.Membership;
 import das.wrb.WRB;
 import servers.Top;
@@ -153,7 +152,7 @@ public class Config {
     public static void reconfigure() {
             Top.reconfigure();
             ABService.reconfigure();
-            OBBC.reconfigure();
+//            OBBC.reconfigure();
             WRB.reconfigure();
             Membership.reconfigure();
     }

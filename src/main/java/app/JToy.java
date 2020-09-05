@@ -3,6 +3,8 @@ package app;
 import utils.config.Config;
 import servers.Top;
 import utils.GEH;
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -54,9 +56,10 @@ public class JToy {
             }
             try {
                 parser.parse(getArgs(scan.next()));
-            } catch (Exception e) {
+            } catch (InterruptedException | IOException e) {
                 logger.error(e);
-                System.exit(0);
+                e.printStackTrace();
+                System.exit(1);
             }
         }
     }

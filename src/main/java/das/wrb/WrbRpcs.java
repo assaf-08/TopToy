@@ -1,6 +1,8 @@
 package das.wrb;
 
 import blockchain.data.BCS;
+import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import proto.prpcs.wrbService.WrbGrpc.*;
 import crypto.BlockDigSig;
 import crypto.SslUtils;
@@ -29,7 +31,7 @@ import proto.types.meta.*;
 import utils.config.yaml.ServerPublicDetails;
 
 public class WrbRpcs extends WrbImplBase {
-    private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(WRB.class);
+//    private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(WRB.class);
 
 
     class authInterceptor implements ServerInterceptor {
@@ -91,7 +93,7 @@ public class WrbRpcs extends WrbImplBase {
                                 serverCrt, serverPrivKey)).
                         intercept(new clientTlsIntercepter()).build();
             } catch (SSLException e) {
-                logger.fatal(format("[#%d]", id), e);
+//                logger.fatal(format("[#%d]", id), e);
             }
             pending = new AtomicInteger[workers];
             for (int i = 0 ; i < workers ; i++) {
@@ -145,20 +147,20 @@ public class WrbRpcs extends WrbImplBase {
         this.serverCrt = serverCrt;
         this.serverPrivKey = serverPrivKey;
         this.caRoot = caRoot;
-        logger.info(format("Initiated WrbRpcs: [id=%d; n=%d; f=%d]", id, n, f));
+//        logger.info(format("Initiated WrbRpcs: [id=%d; n=%d; f=%d]", id, n, f));
     }
 
     void start() {
         try {
             int cores = Runtime.getRuntime().availableProcessors();
-            logger.debug(format("[#%d] There are %d CPU's in the system", id, cores));
+//            logger.debug(format("[#%d] There are %d CPU's in the system", id, cores));
             Executor executor = Executors.newFixedThreadPool(n);
             EventLoopGroup weg = new NioEventLoopGroup(cores);
             wrbServer = NettyServerBuilder.
                     forPort(nodes[id].getWrbPort())
                     .executor(executor)
                     .workerEventLoopGroup(weg)
-                    .bossEventLoopGroup(weg)
+                    .bossEventLoopGroup(weg).channelType(NioServerSocketChannel.class)
 //                    .maxConcurrentCallsPerConnection(100)
                     .sslContext(SslUtils.buildSslContextForServer(serverCrt,
                             caRoot, serverPrivKey)).
@@ -167,14 +169,14 @@ public class WrbRpcs extends WrbImplBase {
                             build().
                             start();
         } catch (IOException e) {
-            logger.fatal(format("[#%d]", id), e);
+            e.printStackTrace();
+//            logger.fatal(format("[#%d]", id), e);
         }
 
         for (ServerPublicDetails n : nodes) {
             peers.put(n.getId(), new peer(n.getIp(),n.getWrbPort(), workers, caRoot, serverCrt, serverPrivKey));
         }
-
-        logger.debug(format("[#%d] initiates wrbRpcs", id));
+//        logger.debug(format("[#%d] initiates wrbRpcs", id));
 
     }
 
@@ -206,12 +208,12 @@ public class WrbRpcs extends WrbImplBase {
                         res.getData().getM().getChannel() == worker) {
                     if (Data.pending[worker].containsKey(key) || BCS.contains(worker, req.getHeight())) return;
                     if (!BlockDigSig.verifyHeader(sender, res.getData())) {
-                        logger.debug(format("[#%d-C[%d]] has received invalid response message from [#%d] for [cidSeries=%d ; cid=%d]",
-                                id, worker, res.getSender(), cidSeries, cid));
+//                        logger.debug(format("[#%d-C[%d]] has received invalid response message from [#%d] for [cidSeries=%d ; cid=%d]",
+//                                id, worker, res.getSender(), cidSeries, cid));
                         return;
                     }
-                    logger.debug(format("[#%d-C[%d]] has received response message from [#%d] for [cidSeries=%d ; cid=%d]",
-                            id, worker, res.getSender(), cidSeries, cid));
+//                    logger.debug(format("[#%d-C[%d]] has received response message from [#%d] for [cidSeries=%d ; cid=%d]",
+//                            id, worker, res.getSender(), cidSeries, cid));
                     synchronized (Data.pending[worker]) {
                         Data.pending[worker].putIfAbsent(key, res.getData());
                         Data.pending[worker].notify();
@@ -232,8 +234,8 @@ public class WrbRpcs extends WrbImplBase {
     }
 
     void broadcastReqMsg(WrbReq req, int channel, int cidSeries, int cid, int sender) {
-        logger.debug(format("[#%d-C[%d]] broadcasts request message [cidSeries=%d ; cid=%d; height=%d]", id,
-                req.getMeta().getChannel(), cidSeries, cid, req.getHeight()));
+//        logger.debug(format("[#%d-C[%d]] broadcasts request message [cidSeries=%d ; cid=%d; height=%d]", id,
+//                req.getMeta().getChannel(), cidSeries, cid, req.getHeight()));
         for (int p : peers.keySet()) {
             if (p == id) continue;
             sendReqMessage(peers.get(p).stub, req, channel, cidSeries, cid, sender);
@@ -255,8 +257,8 @@ public class WrbRpcs extends WrbImplBase {
     @Override
     public void disseminateMessage(BlockHeader request, StreamObserver<Empty> responseObserver) {
         Meta key1 = request.getM();
-        logger.debug(format("received a header for [w=%d; cidSeries=%d; cid=%d]", key1.getChannel(),
-                key1.getCidSeries(), key1.getCid()));
+//        logger.debug(format("received a header for [w=%d; cidSeries=%d; cid=%d]", key1.getChannel(),
+//                key1.getCidSeries(), key1.getCid()));
         addToPendings(request, key1);
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
@@ -278,8 +280,8 @@ public class WrbRpcs extends WrbImplBase {
             msg = BCS.nbGetBlock(worker, request.getHeight()).getHeader();
         }
         if (msg != null) {
-            logger.debug(format("[#%d-C[%d]] has received request message from [#%d] of [cidSeries=%d ; cid=%d]",
-                    id, worker, request.getSender(), cidSeries, cid));
+//            logger.debug(format("[#%d-C[%d]] has received request message from [#%d] of [cidSeries=%d ; cid=%d]",
+//                    id, worker, request.getSender(), cidSeries, cid));
             Meta meta = Meta.newBuilder().
                     setChannel(worker).
                     setCid(cid).
@@ -291,8 +293,8 @@ public class WrbRpcs extends WrbImplBase {
                     setSender(id).
                     build());
         } else {
-            logger.debug(format("[#%d-C[%d]] has received request message from [#%d] of [cidSeries=%d ; cid=%d] but buffers are empty",
-                    id, worker, request.getSender(), cidSeries, cid));
+//            logger.debug(format("[#%d-C[%d]] has received request message from [#%d] of [cidSeries=%d ; cid=%d] but buffers are empty",
+//                    id, worker, request.getSender(), cidSeries, cid));
             responseObserver.onNext(WrbRes.getDefaultInstance());
         }
         responseObserver.onCompleted();

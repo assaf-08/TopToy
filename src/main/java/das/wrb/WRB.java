@@ -1,7 +1,9 @@
 package das.wrb;
 
-import das.bbc.OBBC;
-import das.data.BbcDecData;
+import com.assafmanor.bbc.bbc.BBC;
+import com.assafmanor.bbc.bbc.BBCBuilder;
+import com.assafmanor.bbc.comm.communicationlayer.BBCCommServer;
+import das.bbc.MetaDataAdapter;
 import das.data.Data;
 
 import das.ms.BFD;
@@ -9,13 +11,16 @@ import das.utils.TmoUtils;
 import utils.config.yaml.ServerPublicDetails;
 import utils.statistics.Statistics;
 
-import static das.bbc.OBBC.setFastBbcVote;
 import static das.utils.TmoUtils.*;
 import static java.lang.Math.max;
 import static java.lang.String.format;
 import proto.types.block.*;
 import proto.types.meta.*;
 import proto.types.wrb.*;
+
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class WRB {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(WRB.class);
@@ -24,10 +29,20 @@ public class WRB {
     private static int n;
     private static int f;
     private static WrbRpcs rpcs;
+    private static BBC bbc;
 
     public WRB(int id, int workers, int n, int f, int tmo, ServerPublicDetails[] cluster,
                String serverCrt, String serverPrivKey, String caRoot) {
-
+//        Logger rootLog = Logger.getLogger(BBCCommServer.class.getName());
+//        rootLog.setLevel( Level.FINEST );
+//        ConsoleHandler handler = new ConsoleHandler();
+//        handler.setLevel(Level.FINEST);
+//        rootLog.addHandler(handler);
+        int bbcPort = 8181;
+        bbc = new BBCBuilder(id,bbcPort,n,f).build();
+        for(ServerPublicDetails details : cluster){
+            bbc.addNodeToBroadcastList(details.getIp(),bbcPort);
+        }
         WRB.f = f;
         WRB.n = n;
         WRB.id = id;
@@ -44,11 +59,14 @@ public class WRB {
 
     }
     static public void start() {
+        bbc.start();
         rpcs.start();
     }
 
     static public void shutdown() {
         rpcs.shutdown();
+        bbc.shutdown();
+        bbc.shutdown();
         logger.info(format("[#%d] shutting down wrb service", id));
     }
 
@@ -71,17 +89,17 @@ public class WRB {
 
         preDeliverLogic(key, worker, cidSeries, cid, sender);
 
-        BbcDecData dec = OBBC.propose(setFastBbcVote(key, worker, sender, cidSeries, cid, next), worker, height, sender);
-
-        if (!dec.getDec()) {
+//        BbcDecData dec = OBBC.propose(setFastBbcVote(key, worker, sender, cidSeries, cid, next), worker, height, sender);
+        System.out.println(id+": proposing...Channel "+key.getChannel()+" Cid "+key.getCid()+" Cid Series "+key.getCidSeries());
+        int dec = bbc.propose(1, MetaDataAdapter.metaToBBCMeta(key));
+        System.out.println("Finish proposing...");
+        if (dec == 0) {
             logger.debug(format("[#%d-C[%d]] bbc returned [%d] for [cidSeries=%d ; cid=%d]", id, worker, 0, cidSeries, cid));
             Statistics.updateNeg();
             return null;
         }
         Statistics.updatePos();
-        if (dec.fv) {
-            Statistics.updateOpt();
-        }
+
         logger.debug(format("[#%d-C[%d]] bbc returned [%d] for [cidSeries=%d ; cid=%d]", id, worker, 1, cidSeries, cid));
 
         return postDeliverLogic(key, worker, cidSeries, cid, sender, height);
@@ -164,5 +182,5 @@ public class WRB {
 
     }
 
-    
+
 }

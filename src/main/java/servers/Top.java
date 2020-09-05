@@ -5,7 +5,6 @@ import communication.CommLayer;
 import communication.overlays.clique.Clique;
 import proto.types.client;
 import das.ab.ABService;
-import das.bbc.OBBC;
 import das.ms.Membership;
 import das.wrb.WRB;
 import io.grpc.Server;
@@ -76,8 +75,8 @@ public class Top {
         logger.info(format("[%d] has initiated communication layer", id));
         new ABService(id, n, f, abConfigHome);
         logger.info(format("[%d] has initiated ab service", id));
-        new OBBC(id, n, f, workers, n - f, cluster, comm, caRoot, serverCrt, serverPrivKey);
-        logger.info(format("[%d] has initiated OBBC service", id));
+//        new OBBC(id, n, f, workers, n - f, cluster, comm, caRoot, serverCrt, serverPrivKey);
+//        logger.info(format("[%d] has initiated OBBC service", id));
         new WRB(id, workers, n, f, tmo, cluster, serverCrt, serverPrivKey, caRoot);
         logger.info(format("[%d] has initiated WRB", id));
         new Membership(n);
@@ -98,8 +97,6 @@ public class Top {
 
 
     public static void start() {
-        logger.info("Starting OBBC");
-        OBBC.start();
         logger.info("Starting wrb");
         WRB.start();
         logger.info("Joining to communication layer");
@@ -110,7 +107,7 @@ public class Top {
             // Temporarily! Here we assume that everyone still correct
             logger.error("Error while trying to connect");
             shutdown();
-            System.exit(0);
+            System.exit(1);
         }
         logger.info("Everything is up and good");
 
@@ -123,8 +120,8 @@ public class Top {
         logger.info("leaving communication layer");
         WRB.shutdown();
         logger.info("shutdown WRB");
-        OBBC.shutdown();
-        logger.info("shutdown OBBC");
+//        OBBC.shutdown();
+//        logger.info("shutdown OBBC");
         txsServer.shutdown();
         logger.info("shutdown txsServer");
         for (int i = 0 ; i < workers ; i++) {

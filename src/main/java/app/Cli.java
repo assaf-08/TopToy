@@ -69,6 +69,7 @@ class Cli {
                 return;
             }
             if (args[0].equals("init")) {
+                System.out.println("Start init...");
                 init();
                 System.out.println("Init server... [OK]");
                 return;
@@ -180,6 +181,7 @@ class Cli {
         private void init() {
             JToy.init();
             Top.start();
+            System.out.println("Jtoy init ok...");
         }
 
         private void serve() {
