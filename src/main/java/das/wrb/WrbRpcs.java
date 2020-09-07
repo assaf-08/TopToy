@@ -158,7 +158,7 @@ public class WrbRpcs extends WrbImplBase {
                     forPort(nodes[id].getWrbPort())
                     .executor(executor)
                     .workerEventLoopGroup(weg)
-                    .bossEventLoopGroup(weg)
+                    .bossEventLoopGroup(weg).channelType(NioServerSocketChannel.class)
 //                    .maxConcurrentCallsPerConnection(100)
                     .sslContext(SslUtils.buildSslContextForServer(serverCrt,
                             caRoot, serverPrivKey)).
