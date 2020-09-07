@@ -1,6 +1,7 @@
 package das.wrb;
 
 import blockchain.data.BCS;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import proto.prpcs.wrbService.WrbGrpc.*;
 import crypto.BlockDigSig;
 import crypto.SslUtils;
@@ -158,7 +159,7 @@ public class WrbRpcs extends WrbImplBase {
                     forPort(nodes[id].getWrbPort())
                     .executor(executor)
                     .workerEventLoopGroup(weg)
-                    .bossEventLoopGroup(weg)
+                    .bossEventLoopGroup(weg).channelType(NioServerSocketChannel.class)
 //                    .maxConcurrentCallsPerConnection(100)
                     .sslContext(SslUtils.buildSslContextForServer(serverCrt,
                             caRoot, serverPrivKey)).

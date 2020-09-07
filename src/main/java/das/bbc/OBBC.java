@@ -33,12 +33,16 @@ public class OBBC extends ObbcImplBase {
     public OBBC(int id, int n, int f, int workers, int qSize, ServerPublicDetails[] cluster, CommLayer comm, String caRoot, String serverCrt,
                 String serverPrivKey) {
         OBBC.id = id;
-        bbc = new BBCBuilder(id, 8181).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
+        int bbcPort = 8181;
+        bbc = new BBCBuilder(id, bbcPort,n,f).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
             @Override
             public void onReceiveFirstProtocolMsg(BBCMetaData bbcMetaData, int height) {
                 reCons(MetaDataAdapter.bbcMetaToMeta(bbcMetaData), id, height);
             }
         }).build();
+        for(ServerPublicDetails details : cluster){
+            bbc.addNodeToBroadcastList(details.getIp(),bbcPort);
+        }
         rpcs = new OBBCRpcs(id, n, f, workers, qSize, cluster, caRoot, serverCrt, serverPrivKey, bbc);
         OBBC.comm = comm;
 
@@ -51,10 +55,12 @@ public class OBBC extends ObbcImplBase {
     }
 
     static public void start() {
+        bbc.start();
         rpcs.start();
     }
 
     static public void shutdown() {
+        bbc.shutdown();
         rpcs.shutdown();
     }
 
