@@ -70,13 +70,15 @@ public class WRB {
                 .build();
 
         preDeliverLogic(key, worker, cidSeries, cid, sender);
-
+        
+        System.out.println("Before propose");
         BbcDecData dec = BBC.propose(bbc.BbcMsg.newBuilder()
                 .setM(key)
                 .setVote(true)
                 .setHeight(height)
                 .setSender(sender)
                 .build(),key);
+        System.out.prinln("After propose...");
 
         if (!dec.getDec()) {
             logger.debug(format("[#%d-C[%d]] bbc returned [%d] for [cidSeries=%d ; cid=%d]", id, worker, 0, cidSeries, cid));
