@@ -27,6 +27,7 @@ import proto.types.utils.Empty;
 import proto.types.wrb.*;
 import proto.types.meta.*;
 import utils.config.yaml.ServerPublicDetails;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class WrbRpcs extends WrbImplBase {
     private final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(WRB.class);
