@@ -39,7 +39,7 @@ public class WRB {
 //        handler.setLevel(Level.FINEST);
 //        rootLog.addHandler(handler);
         int bbcPort = 8181;
-        bbc = new BBCBuilder(id,bbcPort,n,f).build();
+        bbc = new BBCBuilder(id,bbcPort,n,f).setNumberOfRounds(25).build();
         for(ServerPublicDetails details : cluster){
             bbc.addNodeToBroadcastList(details.getIp(),bbcPort);
         }
