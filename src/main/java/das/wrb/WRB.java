@@ -78,7 +78,7 @@ public class WRB {
                 .setHeight(height)
                 .setSender(sender)
                 .build(),key);
-        System.out.prinln("After propose...");
+        System.out.println("After propose...");
 
         if (!dec.getDec()) {
             logger.debug(format("[#%d-C[%d]] bbc returned [%d] for [cidSeries=%d ; cid=%d]", id, worker, 0, cidSeries, cid));
