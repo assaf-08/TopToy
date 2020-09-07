@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import das.ab.ABService;
 import das.bbc.BBC;
-import das.bbc.OBBC;
 import das.ms.Membership;
 import das.wrb.WRB;
 import servers.Top;
@@ -155,7 +154,6 @@ public class Config {
             Top.reconfigure();
             ABService.reconfigure();
             BBC.reconfigure();
-            OBBC.reconfigure();
             WRB.reconfigure();
             Membership.reconfigure();
     }

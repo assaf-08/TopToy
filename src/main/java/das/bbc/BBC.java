@@ -55,7 +55,7 @@ public class BBC {
         Meta key = omsg.getM();
         logger.debug(format("[#%d-C[%d]] received BBC message [sender=%d ; cidSeries=%d ; cid=%d ; height=%d ; vote=%b]"
                 ,id, worker, bm.getSender(), bm.getM().getCidSeries(), bm.getM().getCid(), bm.getHeight(), bm.getVote()));
-        OBBC.reCons(key, id, bm.getHeight());
+
         Data.bbcVotes[worker].putIfAbsent(key, new VoteData());
         Data.bbcVotes[worker].computeIfPresent(key, (k, v) -> {
             if (v.getVotersNum() == n - f) return v;

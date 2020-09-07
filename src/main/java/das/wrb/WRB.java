@@ -1,15 +1,15 @@
 package das.wrb;
 
-import das.bbc.OBBC;
+import das.bbc.BBC;
 import das.data.BbcDecData;
 import das.data.Data;
 
 import das.ms.BFD;
 import das.utils.TmoUtils;
+import proto.types.bbc;
 import utils.config.yaml.ServerPublicDetails;
 import utils.statistics.Statistics;
 
-import static das.bbc.OBBC.setFastBbcVote;
 import static das.utils.TmoUtils.*;
 import static java.lang.Math.max;
 import static java.lang.String.format;
@@ -71,7 +71,12 @@ public class WRB {
 
         preDeliverLogic(key, worker, cidSeries, cid, sender);
 
-        BbcDecData dec = OBBC.propose(setFastBbcVote(key, worker, sender, cidSeries, cid, next), worker, height, sender);
+        BbcDecData dec = BBC.propose(bbc.BbcMsg.newBuilder()
+                .setM(key)
+                .setVote(true)
+                .setHeight(height)
+                .setSender(sender)
+                .build(),key);
 
         if (!dec.getDec()) {
             logger.debug(format("[#%d-C[%d]] bbc returned [%d] for [cidSeries=%d ; cid=%d]", id, worker, 0, cidSeries, cid));

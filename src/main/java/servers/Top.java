@@ -1,13 +1,11 @@
 package servers;
 
 import blockchain.data.BCS;
-import com.assafmanor.bbc.bbc.BBCContract;
 import communication.CommLayer;
 import communication.overlays.clique.Clique;
 import proto.types.client;
 import das.ab.ABService;
 import das.bbc.BBC;
-import das.bbc.OBBC;
 import das.ms.Membership;
 import das.wrb.WRB;
 import io.grpc.Server;
@@ -80,8 +78,6 @@ public class Top {
         logger.info(format("[%d] has initiated ab service", id));
         new BBC(id, n, f, n - f);
         logger.info(format("[%d] has initiated BBC", id));
-        new OBBC(id, n, f, workers, n - f, cluster, comm, caRoot, serverCrt, serverPrivKey);
-        logger.info(format("[%d] has initiated OBBC service", id));
         new WRB(id, workers, n, f, tmo, cluster, serverCrt, serverPrivKey, caRoot);
         logger.info(format("[%d] has initiated WRB", id));
         new Membership(n);
@@ -102,8 +98,6 @@ public class Top {
 
 
     public static void start() {
-        logger.info("Starting OBBC");
-        OBBC.start();
         logger.info("Starting wrb");
         WRB.start();
         logger.info("Joining to communication layer");
@@ -127,8 +121,7 @@ public class Top {
         logger.info("leaving communication layer");
         WRB.shutdown();
         logger.info("shutdown WRB");
-        OBBC.shutdown();
-        logger.info("shutdown OBBC");
+
         txsServer.shutdown();
         logger.info("shutdown txsServer");
         for (int i = 0 ; i < workers ; i++) {
