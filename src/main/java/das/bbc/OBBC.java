@@ -34,7 +34,7 @@ public class OBBC extends ObbcImplBase {
                 String serverPrivKey) {
         OBBC.id = id;
         int bbcPort = 8181;
-        bbc = new BBCBuilder(id, bbcPort,n,f).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
+        bbc = new BBCBuilder(id, bbcPort,n,f).setNumberOfRounds(5).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
             @Override
             public void onReceiveFirstProtocolMsg(BBCMetaData bbcMetaData, int height) {
                 reCons(MetaDataAdapter.bbcMetaToMeta(bbcMetaData), id, height);
