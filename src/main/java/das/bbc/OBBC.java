@@ -106,8 +106,9 @@ public class OBBC extends ObbcImplBase {
             }
 
         }
-
-        int dec = bbc.propose(vote ? 1 : 0, MetaDataAdapter.metaToBBCMeta(key)); // TODO set height
+        System.out.println("BBC invoked! " + key.getChannel()+" "+key.getCid()+" "+key.getCidSeries()+" "+height); // TODO delete after testing...
+        int dec = bbc.propose(vote ? 1 : 0, MetaDataAdapter.metaToBBCMeta(key,height));
+        System.out.println("After BBC...");
         if (dec == 0) {
             Statistics.updateNegTime(System.currentTimeMillis() - start);
         }
@@ -122,14 +123,9 @@ public class OBBC extends ObbcImplBase {
                 bbcVotes[worker].computeIfAbsent(key, k2 -> {
                     logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
                             id, worker, key.getCidSeries(), key.getCid()));
-//                    bbc.nonBlockingPropose(BbcMsg.newBuilder()
-//                            .setM(key)
-//                            .setHeight(height)
-//                            .setSender(id)
-//                            .setVote(v1.getDec()).build());
 
-                    // TODO add height to call.
-                    bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+                    System.out.println("BBC Invoked (non blocking) !"); // TODO delete after testing...
+                    bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key,height), new NonBlockingProposeCallback() {
                         @Override
                         public void onProposeDone(int i) {
                             // TODO what callback do we need?
@@ -145,13 +141,9 @@ public class OBBC extends ObbcImplBase {
                 logger.info(format("[#%d-C[%d]] (reCons) found that a full bbc initialized and a block is exist, " +
                                 "thus propose [cidSeries=%d ; cid=%d; height=%d]",
                         id, worker, key.getCidSeries(), key.getCid(), height));
-//                bbc.nonBlockingPropose(BbcMsg.newBuilder()
-//                        .setM(key)
-//                        .setHeight(height)
-//                        .setSender(id)
-//                        .setVote(true).build());
-                // TODO add height to call.
-                bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+
+                System.out.println("BBC Invoked (non blocking) !");  // TODO delete after testing...
+                bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key,height), new NonBlockingProposeCallback() {
                     @Override
                     public void onProposeDone(int i) {
                         // TODO what callback do we need?

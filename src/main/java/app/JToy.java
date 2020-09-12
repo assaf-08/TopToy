@@ -56,7 +56,8 @@ public class JToy {
                 parser.parse(getArgs(scan.next()));
             } catch (Exception e) {
                 logger.error(e);
-                System.exit(0);
+                e.printStackTrace();
+                System.exit(1);
             }
         }
     }

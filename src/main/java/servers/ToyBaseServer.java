@@ -279,6 +279,7 @@ public abstract class ToyBaseServer {
                 logger.info(format("[#%d-C[%d]] main thread has been interrupted on wrb deliver " +
                                 "[height=%d, cidSeries=%d ; cid=%d]",
                         getID(), worker, currHeight, cidSeries, cid));
+                e.printStackTrace(); // TODO delete after testing...
                 return true;
             }
 

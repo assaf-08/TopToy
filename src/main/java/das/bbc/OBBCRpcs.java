@@ -241,13 +241,8 @@ public class OBBCRpcs extends ObbcImplBase {
                     bbcVotes[worker].computeIfPresent(key, (k2, v2) -> {
                         logger.debug(format("[#%d-C[%d]] (addNewFastDec) found that a full bbc initialized, thus propose [cidSeries=%d ; cid=%d]",
                                 id, worker, key.getCidSeries(),  key.getCid()));
-//                        BBC.nonBlockingPropose(BbcMsg.newBuilder()
-//                                .setM(key)
-//                                .setHeight(height)
-//                                .setSender(id)
-//                                .setVote(dec).build());
-                        // TODO add height to call...
-                        bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key), new NonBlockingProposeCallback() {
+
+                        bbc.nonBlockingPropose(1, MetaDataAdapter.metaToBBCMeta(key,height), new NonBlockingProposeCallback() {
                                 @Override
                                 public void onProposeDone(int i) {
                                     // TODO? should we have a callback?
