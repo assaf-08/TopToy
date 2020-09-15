@@ -34,7 +34,7 @@ public class OBBC extends ObbcImplBase {
                 String serverPrivKey) {
         OBBC.id = id;
         int bbcPort = 8181;
-        bbc = new BBCBuilder(id, bbcPort,n,f).setNumberOfRounds(5).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
+        bbc = new BBCBuilder(id, bbcPort,n,f).setNumberOfRounds(1).setOnRcvFirstProtocolMsgCallback(new OnRcvFirstProtocolMsgCallback() {
             @Override
             public void onReceiveFirstProtocolMsg(BBCMetaData bbcMetaData, int height) {
                 reCons(MetaDataAdapter.bbcMetaToMeta(bbcMetaData), id, height);
@@ -67,6 +67,9 @@ public class OBBC extends ObbcImplBase {
 
     static public BbcDecData propose(BbcMsg v, int worker, int height, int expSender) throws InterruptedException {
         Meta key = v.getM();
+        if(key.getCid() >=20){
+            System.exit(15);
+        }
         rpcs.broadcastFVMessage(v);
         synchronized (bbcFastDec[worker]) {
             while (!bbcFastDec[worker].containsKey(key)) {
@@ -107,8 +110,10 @@ public class OBBC extends ObbcImplBase {
 
         }
         System.out.println("BBC invoked! " + key.getChannel()+" "+key.getCid()+" "+key.getCidSeries()+" "+height); // TODO delete after testing...
+        long startBBC = System.currentTimeMillis();
         int dec = bbc.propose(vote ? 1 : 0, MetaDataAdapter.metaToBBCMeta(key,height));
-        System.out.println("After BBC...");
+        long endBBC = System.currentTimeMillis();
+        System.out.println("After BBC, Time: "+(endBBC-startBBC));
         if (dec == 0) {
             Statistics.updateNegTime(System.currentTimeMillis() - start);
         }
